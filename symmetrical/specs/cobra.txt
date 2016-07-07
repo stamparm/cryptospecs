@@ -1,0 +1,416 @@
+From: Christian Schneider <100542.2132@CompuServe.COM>
+Newsgroups: sci.crypt.research
+Subject: New 128-bit block cipher: Cobra
+Date: 13 Apr 1996 05:38:15 GMT
+
+This paper describes the Cobra encryption algorithm, designed
+by Christian Schneider.
+ 
+ 
+To download the Winword version of this paper and some flowcharts
+of Cobra, take a look at the "Cryptography Web Site" at
+ 
+http://ourworld.compuserve.com/homepages/c_schneider
+ 
+ 
+ 
+========================================================================
+ 
+ 
+                                     Cobra
+ 
+                                  Block Cipher
+ 
+                                   designed by
+                               Christian Schneider
+ 
+                               Am Beethovenpark 23
+                                  D-50935 Koeln
+                                     Germany
+                               Fax: 0221 / 4680821
+                        E-mail: 100542.2132@compuserve.com
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Introduction:
+ 
+Cobra is a fast, secure, and variable block cipher. By variable
+I mean that I leave it open how many rounds it has (though I give
+some recommendations) and how long the block length is. But the
+standard Cobra variant: Cobra-(24,128) has a block length of 128
+bit, a maximum key length of 1152 bit (that means it can be anything
+from 1 bit to 1152 bit), and it has 24 rounds.
+ 
+ 
+ 
+ 
+ 
+ 
+                                  Description
+                                       of
+                                 Cobra-(24,128)
+ 
+ 
+ 
+Subkeys:
+ 
+Cobra uses a large array of subkeys, which must be precomputed from
+a secret user key before encryption/decryption takes place, but once
+they are precomputed they can be stored as long as they are needed for
+the encryption/decryption of a file (or of more files). Of course after
+the encryption/decryption is finished they must be discarded, because
+they are the secret key.
+ 
+ 
+ 
+ 
+(all entries are 32-bit values)
+ 
+P-Boxes: (Permutation)
+ 
+           P1,1    P1,2   P1,3
+           P2,1    P2,2   P2,3
+           P3,1    P3,2   P3,3
+             .      .      .
+             .      .      .
+           P24,1  P24,2  P24,3                     288 byte
+ 
+ 
+S-Boxes: (Substitution)
+ 
+           S1,0  S1,1  S1,2 ... S1,255
+           S2,0  S2,1  S2,2 ... S2,255
+           S3,0  S3,1  S3,2 ... S3,255
+           S4,0  S4,1  S4,2 ... S4,255         +  4096 byte
+ 
+ 
+W-Boxes: (Whitening)
+ 
+           W1,1  W1,2  W1,3  W1,4
+           W2,1  W2,2  W2,3  W2,4              +    32 byte  =  4416 byte
+ 
+ 
+These subkey-arrays must be precomputed from the user key in a similar
+way as the Blowfish algorithm makes it key expansion:
+ 
+ 
+1. Initialize first the P-Boxes, the S-Boxes, and then the W-Boxes
+   with a fixed string. This string consists of the hexadecimal
+   digits of (pi). Of course there is nothing special about (pi).
+   So any random string would work too, but it must be fixed and
+   the same for every implementation.
+ 
+ 
+2. XOR all entries of P1 with the first (3*32) bits of the key
+   (that means, that you first XOR P1,1 with the first 32 bits of
+   the user key, then XOR P1,2 with the second 32 bits of the user
+   key, then XOR P1,3 with the third 32 bits of the user key), then
+   all entries of P2 with the second (3*32) bits of the key (that
+   means, that you first XOR P2,1 with the fourth 32 bits of the
+   user key, then XOR P2,2 with the fifth 32 bits of the user key,
+   and then XOR P2,3 with the sixth 32 bits of the user key), and so
+   on for all bits of the key (maximum 1152 key bits = up to P12).
+   Repeatedly cycle through the key bits until all P-Boxes (up to P24)
+   have been XORed with key bits. The reason for only using the user
+   key up to P12 and then repeating it up to P24 is that this makes
+   a better key avalanche effect. If the user key is shorter then
+   1152 bit then just start to repeat the key earlier when it becomes
+   necessary. All in all this procedure just makes all P-Boxes dependent
+   on the user key.
+ 
+ 
+3. Encrypt the all-zero string with the Cobra algorithm, using the
+   subkeys described in steps (1) and (2).
+ 
+ 
+4. Replace P1,1 and P1,2 and P1,3 and P2,1 with the output of step (3).
+ 
+ 
+5. Encrypt the output of step (3) using the Cobra algorithm with the
+   modified subkeys.
+ 
+ 
+6. Replace P2,2 and P2,3 and P3,1 and P3,2 with the output of step (5).
+ 
+ 
+7. Continue the process, replacing all P-Boxes with the output of the
+   continuously changing Cobra algorithm. Then execute step (2) again,
+   but before XORing the 32-bit parts of the user key with the current
+   P-Box entries, just right circular shift (>>>1) every 32-bit part
+   of the user key one bit. This also makes a much better key avalanche
+   effect. And after step (2) just continue and execute steps (3) to (6)
+   again, before going on to step (8).
+ 
+ 
+8. Continue the process as described in steps (3) to (6), replacing all
+   P-Boxes, all S-Boxes, and all W-Boxes with the output of the continuously
+   changing Cobra algorithm. In total 294 iterations are required to generate
+   all required subkeys.
+ 
+ 
+ 
+ 
+ 
+ 
+Encryption:
+ 
+Cobra is a so-called "generalized Feistel-Network" which has (at least) four
+sub-blocks per encryption block. Another advantage of these generalized
+Feistel-Networks is that (at least) the encryption routine can be pipelined,
+which makes the (encryption) algorithm run faster.
+ 
+ 
+ 
+To encrypt the 128-bit data element, X:
+ 
+     Divide X into four 32-bit sub-blocks: A,B,C,D
+ 
+       A = A xor W1,1
+       B = B xor W1,2
+       C = C xor W1,3
+       D = D xor W1,4
+ 
+         For r = 1 to 24
+             A' = D
+             B' = (A xor F(B;Pr,1))>>>1
+             C' = (B xor F(C;Pr,2))>>>1
+             D' = (C xor F(D;Pr,3))>>>1
+ 
+               A = A'
+               B = B'
+               C = C'
+               D = D'
+         Next r
+ 
+       A = A xor W2,1
+       B = B xor W2,2
+       C = C xor W2,3
+       D = D xor W2,4
+ 
+     Finally recombine A,B,C,D to get the ciphertext.
+ 
+ 
+The first and last part are the "Whitening"-parts where the actual
+plaintext is XORed with some key material (the first W-Box), and in
+the last part the ciphertext is again XORed with some other key material
+(the second W-Box) to form the actual ciphertext. This can also be seen
+as an input transformation and an output transformation.
+ 
+The middle part is the actual encryption part, which is iterated 24 times.
+The term ">>>1" stands for a right circular shift of one bit. I've
+implemented it in Cobra in order to make Cobra more secure against
+differential cryptanalysis based on iterative characteristics, because
+when shifting the bits, the differentials are also shifted. And these
+bit-shifts make Cobra also a bit more secure against linear cryptanalysis,
+because the bit-positions of the XOR of some unknown intermediate subdata
+bits, which must be the same for some rounds for linear cryptanalysis are
+also shifted, so that one must use "bad" (normal) linear approximations
+instead of "good" (precalculated) ones. But of course aside from this Cobra
+is in real life completely secure against differential and linear crypt-
+analysis, because if implemented correctly, the S-Boxes (and also the
+P-Boxes and W-Boxes) of Cobra are secret, because they are derived from
+the secret user key, and differential and linear cryptanalysis only works
+with known and constant S-Boxes.
+ 
+ 
+ 
+ 
+ 
+ 
+Decryption:
+ 
+To decrypt the 128-bit data element, X:
+ 
+     Divide X into four 32-bit sub-blocks: A,B,C,D
+ 
+       A = A xor W2,1
+       B = B xor W2,2
+       C = C xor W2,3
+       D = D xor W2,4
+ 
+         For r = 24 to 1
+             D' = A
+             C' = (D<<<1) xor F(D';Pr,3)
+             B' = (C<<<1) xor F(C';Pr,2)
+             A' = (B<<<1) xor F(B';Pr,1)
+ 
+               A = A'
+               B = B'
+               C = C'
+               D = D'
+         Next r
+ 
+       A = A xor W1,1
+       B = B xor W1,2
+       C = C xor W1,3
+       D = D xor W1,4
+ 
+     Finally recombine A,B,C,D to get the plaintext.
+ 
+ 
+This is just the inverse of the encryption routine. The term "<<<1" stands
+for a left circular shift of one bit.
+ 
+ 
+ 
+ 
+F-Function:
+ 
+The F-Function is as follows:
+ 
+   Y = F(X;Pr,n):
+ 
+     Z = X xor Pr,n   (Key-dependent Permutation of the input to the S-Boxes)
+     [abcd] = Z       (Divide Z into four 8-bit quarters)
+     Y = ((S1,a + S2,b mod 2^32) xor S3,c) + S4,d mod 2^32
+ 
+ 
+This F-Function simulates a key-dependent Permutation and a 32:32-bit S-Box
+(Substitution) while actually using four 8:32-bit S-Boxes, which are combined
+using Addition and XOR.
+ 
+ 
+ 
+ 
+ 
+ 
+How to construct other Cobra variants:
+ 
+Let's assume one would like to use the Cobra-(48,256) variant:
+ 
+  -  The number of sub-blocks per block changes from 4 to 8, so the block
+       length changes from 128 bit to 256 bit.
+ 
+  -  The number of P-Boxes changes from 24 to 48, because the number of
+       rounds changes from 24 to 48. (use at least 6*(number of sub-blocks)
+       rounds to get a good avalanche effect)
+ 
+  -  The maximum key length changes from (24/2*3*32)=1152 bit to
+       (48/2*7*32)=5376 bit.
+ 
+  -  The number of entries per P-Box changes from 3 to 7.
+ 
+  -  The number of entries per W-Box changes from 4 to 8.
+ 
+ 
+And in the encryption/decryption routine the 32-bit sub-blocks must range
+from A to H instead of A,B,C,D.
+ 
+ 
+ 
+To encrypt the 256-bit data element, X, with Cobra-(48,256):
+ 
+     Divide X into eight 32-bit sub-blocks: A,B,C,D,E,F,G,H
+ 
+       A = A xor W1,1
+       B = B xor W1,2
+       C = C xor W1,3
+       D = D xor W1,4
+       E = E xor W1,5
+       F = F xor W1,6
+       G = G xor W1,7
+       H = H xor W1,8
+ 
+         For r = 1 to 48
+             A' = H
+             B' = (A xor F(B;Pr,1))>>>1
+             C' = (B xor F(C;Pr,2))>>>1
+             D' = (C xor F(D;Pr,3))>>>1
+             E' = (D xor F(E;Pr,4))>>>1
+             F' = (E xor F(F;Pr,5))>>>1
+             G' = (F xor F(G;Pr,6))>>>1
+             H' = (G xor F(H;Pr,7))>>>1
+ 
+               A = A'
+               B = B'
+               C = C'
+               D = D'
+               E = E'
+               F = F'
+               G = G'
+               H = H'
+         Next r
+ 
+       A = A xor W2,1
+       B = B xor W2,2
+       C = C xor W2,3
+       D = D xor W2,4
+       E = E xor W2,5
+ 
+       F = F xor W2,6
+       G = G xor W2,7
+       H = H xor W2,8
+ 
+     Finally recombine A,B,C,D,E,F,G,H to get the ciphertext.
+ 
+ 
+ 
+ 
+ 
+ To decrypt the 256-bit data element, X, with Cobra-(48,256):
+ 
+     Divide X into eight 32-bit sub-blocks: A,B,C,D,E,F,G,H
+ 
+       A = A xor W2,1
+       B = B xor W2,2
+       C = C xor W2,3
+       D = D xor W2,4
+       E = E xor W2,5
+       F = F xor W2,6
+       G = G xor W2,7
+       H = H xor W2,8
+ 
+         For r = 48 to 1
+             H' = A
+             G' = (H<<<1) xor F(H';Pr,7)
+             F' = (G<<<1) xor F(G';Pr,6)
+             E' = (F<<<1) xor F(F';Pr,5)
+             D' = (E<<<1) xor F(E';Pr,4)
+             C' = (D<<<1) xor F(D';Pr,3)
+             B' = (C<<<1) xor F(C';Pr,2)
+             A' = (B<<<1) xor F(B';Pr,1)
+ 
+               A = A'
+               B = B'
+               C = C'
+               D = D'
+               E = E'
+               F = F'
+               G = G'
+               H = H'
+         Next r
+ 
+       A = A xor W1,1
+       B = B xor W1,2
+       C = C xor W1,3
+       D = D xor W1,4
+       E = E xor W1,5
+       F = F xor W1,6
+       G = G xor W1,7
+       H = H xor W1,8
+ 
+     Finally recombine A,B,C,D,E,F,G,H to get the plaintext.
+ 
+ 
+ 
+ 
+ 
+   _____________________________________________________________________
+  | Ciao,                      PGP-KeyID: EC2F4101  Created: 1995/05/14 |
+  | Christian Schneider        PGP-Fingerprint: 0A 24 32 F5 17 4A CD 19 |
+  | E-Mail: 100542.2132@compuserve.com          C7 FF 92 44 E4 5E 2D 42 |
+  | Homepage: http://ourworld.compuserve.com/homepages/c_schneider      |
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+Any comments or questions are welcome.
+ 
+- Chris
+ 
+
+
+

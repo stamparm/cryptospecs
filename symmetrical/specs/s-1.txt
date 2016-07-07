@@ -1,0 +1,260 @@
+S-1 : An early version of SKIPJACK?
+
+
+
+
+The following message was posted to the Cypherpunks list along with similar
+posts to sci.crypt on or around 9th August 1995. Since then the S1 Algorithm
+has been examined in detail and has been shown to be seriously flawed (in
+the key scheduling) and several other peculiarities have been noticed
+(including the TOP SECRET classification (NSA cryptographic algorithms are
+SECRET, although it is known that cryptanalytic techniques can be, and
+codeword restrictions are not generally separated from the actual file), a
+typo, and the unusual coding style (which appears to originate from a
+debugger or a language other than C).
+
+
+
+Consequently S1 is generally now accepted to be either an early version of
+SKIPJACK (or another military or commercial algorithm) or a very good hoax
+by someone with far too much free time on their hands (Matt Blaze, who along
+with Bruce Schneier has spent some time examining SKIPJACK estimated that he
+could have done it, but it would have taken him a month of effort).
+
+
+
+However it is worth noting that Dorothy Denning was asked if S-1 was
+skipjack and said that it was 'definitely not':
+
+
+
+
+------------------------------------------------------------------------
+
+
+
+Re: More "S-1" foolishness (fwd)
+From: Michael Froomkin (mfroomki@umiami.ir.miami.edu)
+Date: Thu, 10 Aug 1995 23:58:29 -0400 (EDT)
+
+How about this?
+
+A. Michael Froomkin | +1 (305) 284-4285; +1 (305) 284-6506 (fax)
+Associate Professor of Law | mfroomki@umiami.ir.miami.edu
+U. Miami School of Law |
+P.O. Box 248087 | It's hot here. And humid.
+Coral Gables, FL 33124 USA |
+See http://www-swiss.ai.mit.edu/6095/articles/froomkin-metaphor/text.html
+and http://www.law.cornell.edu/jol/froomkin.htm
+
+---------- Forwarded message ----------
+Date: Thu, 10 Aug 1995 23:34:42 -0400 (EDT)
+From: Dorothy Denning
+To: mfroomki@umiami.ir.miami.edu
+Cc: denning@cs.cosc.georgetown.edu
+Subject: Re: More "S-1" foolishness (fwd)
+
+Thanks for sending all this stuff. The algorithm is definitely
+not Skipjack. Feel free to pass this along if you'd like.
+
+Cheers,
+Dorothy
+
+
+
+
+------------------------------------------------------------------------
+
+
+
+
+The entire text of the messge posted to the Cypherpunks list is included
+below, although if you intend searching the archives for more information
+then it is worth noting that the thread name was quickly changed to '"S1"
+encryption system' and '"S-1" key schedule'.
+
+
+
+
+------------------------------------------------------------------------
+
+
+
+From owner-cypherpunks@toad.com Wed Aug  9 20:12:25 1995
+To: cypherpunks@toad.com
+From: anon-remailer@utopia.hacktic.nl (Anonymous)
+Organization: Hack-Tic International, Inc.
+Comments: Hack-Tic may or may not approve of the content of this posting
+Comments: Please report misuse of this automated remailing service to
+Subject: this looked like it might be interesting
+Sender: owner-cypherpunks@toad.com
+
+it was on a floppy i got in the mail last week:
+
+/* TOP SECRET                                                    */
+/* See label file for codeword restrictions                      */
+
+/*****************************************************************/
+/* TOP SECRET                                                    */
+/* See label file for codeword restrictions                      */
+/*                                                               */
+/* S-1 CIPHER ALGORITHM software chip simulator                  */
+/*                                                               */
+/* NOT INTENDED FOR EXTERNAL, PRODUCTION, OR CONTRACTOR USE OR   */
+/* DISCLOSURE.                                                   */
+/* NOT CERTIFIED OR APPROVED FOR USE AS REFERENCE.               */
+/* FOR SECONDARY ANALYTIC USE ONLY.                              */
+/*                                                               */
+/* Basic chip functions. Block encryption methods are not        */
+/* implemented.                                                  */
+/*                                                               */
+/* SOFTWARE HISTORY:                                             */
+/* 1 FEBRUARY 1989 --- Submitted to source control.              */
+/* 31 JULY 1991 --- Moved UFV support into basic functions.      */
+/*                                                               */
+/* TOP SECRET                                                    */
+/* See label file for codeword restrictions                      */
+/*****************************************************************/
+
+
+/* local declarations are for ANSI C */
+#include
+#include
+
+/* S-1 F table - these differ in the S-2 version */
+static u_char F[4][256];
+/* S-1 F selection (G) table */
+static u_char G[2][256];
+
+/* exported interface */
+
+int S1_self_check(void);
+int S1_zeroize(void);
+int S1_load_key(int, u_char *);
+int S1_encrypt_block(int, u_char *);
+int S1_decrypt_block(int, u_char *);
+int S1_create_key(u_char *, u_char *);
+
+
+/* local functions */
+static void f_initialize(void);
+static void rotatekey(int, u_char *);
+static u_char f(int,int);
+static u_char g(int,int);
+
+
+/* CHIP PARAMETERS */
+
+#define KEYGEN_CHIP 1 /* delete this to simulate operational chipsets */
+#define KEY_REGISTERS 4
+#define INTEGRITY KEY_REGISTERS
+
+/* user family vectors (UFV) */
+static u_char clear_family[8] = {129,3,5,7,2,4,6,131};
+static u_char cipher_family[8] = {1,254,253,252,128,129,130,8};
+
+static u_char key_integrity_key[10] = {0,0,0,0,0,0,0,0,0,0};
+
+static u_char key[KEY_REGISTERS+1][10];
+static u_char fullkey[KEY_REGISTERS+1][32][6];  /* SOFTWARE ONLY */
+
+static int initialized=0;
+
+/* EXPORTED SIMULATED CHIP INTERFACE */
+/* SEE NOTES FOR INTERFACE DESCRIPTIONS */
+
+
+int S1_self_check()
+{
+	f_initialize();
+	rotatekey(INTEGRITY,key_integrity_key);
+	initialized=1;
+	return 0;
+}
+
+
+int S1_zeroize()
+{
+	int i, j, k;
+
+	i=0;
+	while (i= KEY_REGISTERS))
+		return 9;
+	memcpy(key_buffer,key_vector,12);
+	S1_decrypt_block(INTEGRITY,key_buffer);
+	S1_decrypt_block(INTEGRITY,key_buffer+4);
+	if ((key_buffer[10] != 0) || (key_buffer[11] != 0))
+		return 2;
+	rotatekey(key_register,key_buffer);
+	memcpy(key[key_register],key_buffer,10);
+	return 0;
+}
+
+
+int S1_encrypt_block(int key_register, u_char *block)
+{
+	int r, startf, i;
+	
+	if (initialized == 0)
+		return 1;
+	i=0;
+	while (i0) {
+		i = i-1;
+		r=i*2;
+		startf = g(0,fullkey[key_register][r][0] ^ block[(r+4) % 8])
+		       + g(1,fullkey[key_register][r][1] ^ block[(r+5) %
+8])*2;
+		block[(r+6) % 8] = block[(r+6) % 8]
+			       ^ f(((startf+0) % 4),
+				   fullkey[key_register][r][2]
+				 ^ block[(r+2) % 8]);
+		block[(r+6) % 8] = block[(r+6) % 8]
+			       ^ (f(((startf+1) % 4),
+				   fullkey[key_register][r][3]
+				 ^ block[(r+3) % 8]) << 4);	
+		block[(r+7) % 8] = block[(r+7) % 8]
+			       ^ f(((startf+2) % 4),
+				   fullkey[key_register][r][4]
+				 ^ block[(r+0) % 8]);
+		block[(r+7) % 8] = block[(r+7) % 8]
+			       ^ (f(((startf+3) % 4),
+				   fullkey[key_register][r][5]
+				 ^ block[(r+1) % 8]) << 4);
+	}
+	i=0;
+	while (i3) || (value255)) {
+		fprintf(stderr,"\n\nF TABLE EXCEPTION %x
+%x\n\n",table,value);
+		exit(1001);
+	}
+	return F[table][value];
+}
+
+
+static u_char g(int table, int value)
+{
+	if ((table2) || (value255)) {
+		fprintf(stderr,"\n\nG TABLE EXCEPTION %x
+%x\n\n",table,value);
+		exit(1001);
+	}
+	return G[table][value];
+}
+
+
+/* TOP SECRET                                                    */
+/* See label file for codeword restrictions                      */
+
+
+
+
+------------------------------------------------------------------------
+Last Modified : 7 September 1995
+Jon C. Baber <jbaber@mi.leeds.ac.uk>
+PGP public key available
+------------------------------------------------------------------------
+Cryptography Page
+Cypherpunks Page
+Back to Homepage
+
+

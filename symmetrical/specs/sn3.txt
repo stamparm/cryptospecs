@@ -1,0 +1,260 @@
+sci.crypt.research > The SN3 Stream Cipher 
+Simeon Maltchev	  Oct 18 2002, 4:48 am
+
+The SN3 Stream Cipher 
+--------------------- 
+
+
+SN3 is a software-efficient stream cipher, optimized for execution on 32-bit 
+micro processors. It is designed around one key-dependent S-box, which 
+dynamically changes during the encryption process. Secret key is up to 768 
+bytes long. The keystream consists of 32-bit words and is generated 
+independently from the encrypted message. This algorithm can be used not only 
+as a stream cipher, but also as a general purpose pseudorandom number generator. 
+
+
+Algorithm description: 
+---------------------- 
+
+
+The algorithm is designed with respect to be efficient for software 
+implementation. It uses only simple mixing operation like "xor" and cyclical 
+rotation and generates keystream, which is unbiased and uncorelated. 
+
+
+The S-box V (192 32-bit values) is conventionally divided into three equal 
+parts, named V1, V2 and V3, where V1 consists of the first 64 32-bit words 
+of V, V2 of the next 64 32-bit words of V, and V3 of the last 64 32-bit 
+words of V. Index i addresses only the V1 table, j only the V2 table and 
+m only the V3 table. 
+
+
+To generate the first 64 32-bit keystream words Ki (i = 1..64), do the following 
+
+
+10 steps repeatedly 64 times: 
+
+
+Note: "<<<" denotes cyclical left rotation; 
+      ">>" denotes non-arithmetical right shift; 
+      "^" denotes exclusive bitwise or operation; 
+
+
+(Indexes i and j are initially set to zero.) 
+
+
+1. T1    = V1[i] 
+2. T2    = V2[j] 
+3. m     = T1 mod 64 
+4. T3    = V3[m] 
+
+
+5. V1[i] = (T1 <<< 1)  ^ T2 
+6. V2[j] = (T2 <<< 5)  ^ T3 ^ 0x8c591ca1 
+7. V3[m] = (T3 <<< 17) ^ T1 ^ 0xab8ec254 
+
+
+8. i = (i + 1) mod 64 
+9. j = (T1 >> 8) mod 64 
+
+
+10. Ki    = T1 ^ T2 ^ T3 
+
+
+After that, do a cyclical left rotation of S-box V on 64 32-bit words left and 
+continue to generate the next 64 keystream words. 
+
+
+Speed: 
+------ 
+The cyclical rotation of S-box V, which is as far as I know a novel stream 
+cipher design pattern, may at first seem to be a time consuming operation, 
+but in fact it can be very easily and inexpensively implemented in software. 
+The assembler implementation of the algorithm takes about 19 inner processor 
+clocks (Intel Pentium processor class) to generate one 32 bit keystream value. 
+The C version given below, when compiled with speed optimizations, gives 
+usually 15 to 20 percents worse speed results. 
+
+
+Analysis: 
+--------- 
+One important idea around which algorithm was built is that every internal seed 
+word, depending on which the current keystream word is generated, is changed 
+immediately after its use in a non-linear and unpredictable from the keystream 
+way. The next keystream word is a function of at least one inner seed word, 
+which is not a simple function of the seed's words used in the generation of 
+the previous one (keep in mind index i, which walks with step 1 via the V1 
+table). Another base idea is the combination of the cyclical rotation operations 
+
+
+in steps 5, 6 and 7 with the cyclical rotation of the S-box V, which allows 
+every particular bit of V to be mixed with every other bit of V. This has direct 
+
+
+relationship to the random properties of the generated keystream. Another 
+important point is that T1, T2 and T3 words are chosen form three different and 
+non-overlapping tables (V1, V2 and V3). 
+
+
+The values for the constants used in steps 5, 6 and 7 of the algorithm were 
+tuned by performing a lot of tests with George Marsaglia's 'DIEHARD' test suite 
+and with Bob Jenkins' chi.c program. With the chosen values, the algorithm 
+passed all tests with all examined initial seeds, even with all zeros, all ones 
+and similar bad seeds. This is not a proof for the security of the algorithm, 
+but it can be regarded as a necessary, but non-sufficient condition for such 
+a proof. Suggestions and opinions on how to improve the heuristical 
+determination of these values, and on the algorithm as a whole, are welcome. 
+
+
+Legal issues: 
+------------- 
+
+
+The SN3 algorithm is free and may be used for any legal purposes without 
+payment of royalties to the author. 
+
+
+Sources: 
+-------- 
+
+
+The C Sources included below implement the algorithm given above and also 
+contain the key-expansion routine, although it is believed that the SN3 
+strength does not depend on it. 
+
+
+/* SN3 implementation. Public Domain. No warranty of any kind. */ 
+/* Author: Simeon Maltchev, smaltc...@yahoo.com */ 
+
+
+#include <stdio.h> 
+#include <string.h> 
+
+
+typedef unsigned long int u32; 
+
+
+#define TABLE_SIZE 64 
+#define SBOX_SIZE (3 * TABLE_SIZE) 
+#define INDEX_MASK (TABLE_SIZE - 1) 
+
+
+#define rotl(a, b) (((a) << ((b) & 31)) | ((a) >> (32 - ((b) & 31)))) 
+
+
+u32 keystream[SBOX_SIZE]; 
+u32 seed[SBOX_SIZE]; 
+
+
+char *simple_key = "abcdefgh"; 
+
+
+void sn3(); 
+void init_seed(char *key, u32 key_len); 
+void print_keystream(); 
+
+
+int main() 
+{ 
+        init_seed(simple_key, strlen(simple_key)); 
+
+
+        sn3(); 
+        print_keystream(); 
+
+
+        sn3(); 
+        print_keystream(); 
+
+
+        return 0; 
+
+
+} 
+
+
+/* Call this function to generate 192 random 32-bit values. */ 
+void sn3() 
+{ 
+        u32 *v1, *v2, *v3, *temp; 
+        u32 t1, t2, t3, i, m, k, n, n1, n2; 
+        static u32 j = 0; 
+
+
+        v1 = seed; 
+        v2 = v1 + TABLE_SIZE; 
+        v3 = v2 + TABLE_SIZE; 
+        i = n = 0; 
+        for (n1 = 0; n1 < 3; n1++) 
+        { 
+                for (n2 = 0; n2 < TABLE_SIZE; n2++) 
+                { 
+                        t1 = v1[i]; 
+                        t2 = v2[j]; 
+                        m  = t1 & INDEX_MASK; 
+                        t3 = v3[m]; 
+
+
+                        k  = t1 ^ t2 ^ t3; 
+
+
+                        v1[i] = rotl(t1, 1)  ^ t2; 
+                        v2[j] = rotl(t2, 5)  ^ t3 ^ 0x8c591ca1; 
+                        v3[m] = rotl(t3, 17) ^ t1 ^ 0xab8ec254; 
+
+
+                        i++; 
+                        i &= INDEX_MASK; 
+                        j = (t1 >> 8) & INDEX_MASK; 
+
+
+                        keystream[n++] = k; 
+                } 
+
+
+                temp = v1; 
+                v1   = v2; 
+                v2   = v3; 
+                v3   = temp; 
+        } 
+
+
+} 
+
+
+void init_seed(char *key, u32 key_len) 
+{ 
+        u32 i, j; 
+        char *char_seed = (char *) seed; 
+
+
+        for (i = j = 0; i < SBOX_SIZE*sizeof(u32); i++, j++) 
+        { 
+                if (j == key_len) 
+                        j = 0; 
+                char_seed[i] = key[j]; 
+        } 
+
+
+        sn3(); 
+        for (i = 0; i < SBOX_SIZE; i++) 
+                seed[i] = rotl(seed[i], 19) ^ keystream[i]; 
+
+
+} 
+
+
+void print_keystream() 
+{ 
+        u32 i; 
+
+
+        for (i = 1; i <= SBOX_SIZE; i++) { 
+                printf("%08x\t", keystream[i - 1]); 
+                if (i % 4 == 0) 
+                        printf("\n"); 
+        } 
+        printf("\n\n"); 
+
+
+}

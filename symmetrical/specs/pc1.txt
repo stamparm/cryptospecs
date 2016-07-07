@@ -1,0 +1,779 @@
+The PC1 Encryption Algorithm 
+Very High Security with 128 or 256-bit keys
+
+Alexander Pukall 2004
+alexandermail@hotmail.com
+
+
+PC1 FAQ
+
+
+Question:
+
+
+
+ I can see on the web algorithms with key length of 512, 1024, 2048 or 4096
+bits. Why is PC1 so short with 128 or 256 bit keys ?
+
+
+
+Answer:
+
+
+
+You misunderstand the key length problem.
+
+Symmetric algorithms like PC1 are used to encrypt data. They use key lengths
+of 40, 56, 64, 80, 128 or 256 bits. 256 is the maximum at the present time
+because there is no need for longer keys. 256 bits will provide maximum
+security for billions of years.
+
+
+
+Asymmetric algorithms like RSA are used to exchange passwords meant for
+symmetric algorithms when passwords cannot be sent in clear text over the
+Internet (hackers might intercept the passwords). So asymmetric algorithms
+are only used to exchange passwords in a secure manner. Only symmetric
+algorithms are used to encrypt data. Asymmetric algorithms are not used to
+encrypt data.
+
+Asymmetric algorithms are based on prime numbers and use bigger keys because
+it’s easier to crack them if the key is too short. Asymmetric length of keys
+are 512, 1024, 2048 or 4096 bits.
+
+
+
+Question:
+
+
+
+Is PC1 secure ?
+
+
+
+Answer:
+
+
+
+PC1 is as secure as other ciphers with same key length. If you use a cipher
+with a 56 bit key, it’s better than one with a 40 bit key. 256 bit keys are
+currently the best in security and are likely to remain so for billions of
+years.
+
+PC1 was originally designed in 1991 with a 80 bit key length. Then PC1 was
+upgraded to follow the regular increase in the raw computational powers of
+the machines. PC1 was first upgraded to a 128 bit key length, and then
+again,  to 256 bit keys.
+
+There is no limit to the key length which could be used with PC1, but it is
+pointless to use 2300000 bit keys if 256 bit keys will provide absolute
+security for generations and generations to come.
+
+128 bit keys are the current standard for commercial applications like
+credit card encryption, data encryption, enterprise interconnection, etc.
+
+256 bit keys are only used for military applications, e.g. to encrypt the
+launch code of thermonuclear missiles. Military tactical radios and
+satellite only use 128 bit keys.
+
+Note that a 256 bit key encryption is more time consuming for the processor
+than a 128 bit key encryption.
+
+PC1 128 bit uses a 16 character password (16*8=128 bits).
+
+PC1 256 bit uses a 32 character password (32*8=256 bits).
+
+When the user’s password is shorter, it can be completed with a fixed string
+like ‘abcdefghijklm…’ to generate the required 16 or 32 character password.
+
+
+
+Question:
+
+
+
+I want to restrict access to a software through passwords. I want to store
+encrypted passwords in a database and check out the passwords entered by
+users against the original database passwords before accepting user
+connection to my application. I use PC1 256 bit input=text output=text and a
+fixed key like ‘topsecret’ stored in my software to decrypt the password the
+user entered and compare it with the password stored in the database.
+
+
+
+For example my database contains:
+
+
+
+Smith; dfhjedfa
+
+Doe; lbcdlancpd
+
+
+
+‘dfhjedfa’ and ‘lbcdlancpd’ are the encrypted forms of the passwords entered
+by Smith and Doe. When Smith enters ‘toto’ as his literal string password, I
+decrypt the database ‘dfhjedfa’ string with my fixed ‘topsecret’ key and
+check that the decrypted result is equal to ‘toto’. If both passwords tally,
+the user is allowed to connect to my software.
+
+
+
+Is this a good method ?
+
+
+
+Answer:
+
+
+
+This is a very bad method. Most probably a good hacker could easily
+disassemble your application. Then he could just as easily find your fixed
+‘topsecret’ key  inside your code and he would be able to decrypt all your
+passwords with it.
+
+
+
+You must use one way hash encryption to store passwords in a secure manner,
+i.e. a user’s password must be encrypted with his own password as a key. No
+fixed key should ever be used.
+
+
+
+Let’s take a few examples:
+
+
+
+– Smith with password ‘toto’
+
+
+
+You use PC1 to encrypt the ‘toto’ input with the ‘toto’ password as the PC1
+key.
+
+
+
+Resulting password:
+
+
+
+Smith; flokpefh (this is the password to store in your database)
+
+
+
+– Doe with password ‘hello’
+
+
+
+You use PC1 to encrypt the ‘hello’ input with the ‘hello’ password as the
+PC1 key.
+
+
+
+Resulting password:
+
+
+
+Doe; joklnpeomn (this is the password to store in your database)
+
+
+
+When Smith tries to connect to your application, he will enter his ‘toto’
+password. You then use this ‘toto’ password as the PC1 key and you encrypt
+this same ‘toto’ input. This will give you ‘flokpefh’ as a resulting
+password. You can then check this result out against the encrypted password
+stored in your database. Users are allowed to connect to your application
+only when both passwords match.
+
+
+
+With this method there is no fixed key that a hacker could find stored in
+your software.
+
+There is no password decryption, only password encryption, and comparison
+with the encrypted password stored in the database.
+
+
+
+However this method offers only mid-level security because someone could
+steal your database and then know the length of the user’s password.
+
+
+
+Let’s take our examples again. Smith’s password as stored in the database is
+‘flokpefh’. It is easy to work out that his password is 4 characters long.
+(length of the encrypted password divided by 2).
+
+Doe’s password as stored in the database is ‘joklnpeomn’. Then his password
+is 5 characters long.
+
+
+
+To avoid such problems, all stored passwords should have the same length. It
+is recommended to use a 32 byte length.
+
+
+
+This is simple to implement. Let’s take our Smith example again.
+
+
+
+Smith uses ‘toto’ as a password. Note that users should not be allowed to
+use passwords of more than 30 characters.
+
+
+
+You then generate a string with ‘toto’, plus a fixed string, and the length
+of the user’s password at position 31 and 32 of the string.
+
+
+
+The generated string could be:
+
+
+
+‘totoabcdefghijklmnopqrstuvwxyz04’
+
+
+
+– ‘toto’ is the user’s password.
+
+
+
+– ‘abcdefghijklmnopqrstuvwxy’ is the fixed string. Note that the length of
+such fixed strings decreases as the length of the user’s password increases.
+
+
+
+– ‘04’ is the length of the user’s password (‘toto’ is 4 characters long).
+If the password had been ‘hello’ the final 2 digits would have been ‘05’.
+
+
+
+The final 2 digits vary from ‘00’ (no password, blank password), to ‘30’ (a
+password with 30 characters).
+
+
+
+Let’s take another example:
+
+
+
+‘mysecretpassword’ is the user’s password.
+
+
+
+The generated string will be
+
+‘mysecretpasswordabcdefghijklmn16’
+
+
+
+In this way, the stored string will always be 32 characters long.
+
+
+
+Let’s take a look at how one way encryption works:
+
+
+
+With our Smith example, you encrypt the ‘totoabcdefghijklmnopqrstuvwxyz04’
+data string with PC1 and the ‘toto’ password as the PC1 key. This will give
+you a 64 byte string to be stored in your database.
+
+
+
+With our second example, you encrypt the ‘mysecretpasswordabcdefghijklmn16’
+data string with PC1 and the ‘mysecretpassword’ password as the PC1 key.
+This will give you a 64 byte string to be stored in your database.
+
+
+
+Here is how to test if Smith can connect to your application. Let’s suppose
+that Smith has just entered his ‘toto’ password.
+
+
+
+You generate the ‘totoabcdefghijklmnopqrstuvwxyz04’ string, then you encrypt
+it with the ‘toto’ password as the PC1 key. You will get a 64 byte string
+that you can compare with the 64 byte string stored in your database. If
+both match, then you can allow this user to connect to your application.
+
+
+
+Hackers could still get hold of your database, but they will neither be able
+to determine the length of individual passwords, nor what the actual
+passwords might be.
+
+
+
+Question:
+
+
+
+I have created a word processor and I want to include encryption. I use PC1
+256 bits input= BINARY output= BINARY. Can I use PC1 and the password the
+user will enter to encrypt the user’s documents?
+
+
+
+Answer:
+
+
+
+You could, but it would not be the best method because all documents would
+be encrypted with the same key.
+
+
+
+As a rule, a different key should be used for each document. However, most
+users do not want to memorize so many passwords. The solution is to use a
+random key to encrypt the document and to encrypt this random key with the
+user’s password.
+
+
+
+So you must first create a random key each time a user wants to encrypt a
+document.
+
+
+
+Let’s suppose that a user has just entered ‘mypassword’ as his document
+password.
+
+
+
+The computer time is 17:23:03, the date 30-01-2004, the mouse position is
+X:123, Y:087, the free disk space is 128657784668 bytes.
+
+
+
+You first reverse the order of the free bytes number. This is because the
+latter digits of such numbers have the highest renewal rate, i.e. they are
+most unpredictable. So a ‘128657784668’ free bytes number will be used as
+‘866487756821’ in the encryption process.
+
+
+
+Then you have to generate a string with all the items that we just
+mentioned, i.e. time, date, mouse position, free disk space (in reverse
+order). You will get something like
+
+’17:23:0330-01-200412308786648775’ of which you only take the first 32
+bytes.
+
+
+
+As a third step, you encrypt the resulting string with the user’s password
+(‘mypassword’). This will give you a 32 byte binary string (the binary
+output format is used here).
+
+
+
+Here is our example string in hexadecimal:
+
+
+
+RESULT KEY =
+0DFEFCCD23FDAE121FF77E8F3D5DEEC4CC7876BE3567334839DF478214FE98FF (don’t
+forget that ‘OD’ or ‘FE’ is only a byte in hexadecimal and doesn’t take two
+bytes).
+
+
+
+You then use this RESULT KEY to encrypt the user’s document with PC1
+(input=binary format, output=binary format) into a file.
+
+
+
+Next, you encrypt the RESULT KEY with the user’s password (‘mypassword’).
+Let’s call this encrypted result the ENCRYPTED RESULT KEY.
+
+
+
+This ENCRYPTED RESULT KEY must be stored at the start or the end of the
+final encrypted document.
+
+
+
+In this way, each time a user encrypts a different document, the RESULT KEY
+is different even though the password might be the same (‘mypassword’). This
+is because the time, date, free disk space and mouse position will be
+different each time.
+
+
+
+Note that ONLY the ENCRYPTED RESULT KEY is stored within the encrypted
+document. Neither the RESULT KEY, nor the USER’S PASSWORD (‘mypassword’ in
+our example) should ever be stored within the encrypted document.
+
+
+
+This is all for encryption.
+
+
+
+Now let’s take a look at how decryption works.
+
+
+
+Let’s suppose that our user has just entered his password (‘mypassword’).
+You read the ENCRYPTED RESULT KEY in the document. You decrypt the ENCRYPTED
+RESULT KEY with the password the user entered (‘mypassword’), and you get
+the following RESULT KEY:
+
+
+
+RESULT KEY =
+0DFEFCCD23FDAE121FF77E8F3D5DEEC4CC7876BE3567334839DF478214FE98FF
+
+
+
+You then use this RESULT KEY to decrypt the user’s document.
+
+
+
+Question:
+
+
+
+Ok for encrypting documents with my word processor. But I want to verify if
+users type the right password or not because I don’t want to show garbage
+characters on screen when passwords are incorrect. I want to store the
+user’s password in encrypted form within the encrypted document, then use it
+to verify if the password the user entered is valid or not.
+
+
+
+Can I do this ?
+
+
+
+Answer:
+
+
+
+No, you should NEVER store users’ passwords (e.g. ‘mypassword’) within
+documents, not even in encrypted form.
+
+
+
+To check password validity, you must use the following method:
+
+
+
+– Add a fixed string at the start of the document like ‘START OF DOCUMENT’.
+
+
+
+– Encrypt all the document (even the fixed string) with the RESULT KEY as
+explained above.
+
+
+
+– Encrypt the RESULT KEY with the user’s password and store the ENCRYPTED
+RESULT KEY at the start of the document.
+
+
+
+Now about decryption.
+
+
+
+When a user enters a password to decrypt a document, you must use that
+password to decrypt the ENCRYPTED RESULT KEY, then use the RESULT KEY to
+decrypt only the first 17 characters of the document. If the first 17
+decrypted characters are ‘START OF DOCUMENT’, then the user’s password is
+valid. If the password is invalid,  you can stop decrypting the document
+altogether and pop up a message with ‘Your password is incorrect!’
+
+
+
+Question:
+
+
+
+I’m creating a chat system. Two users can exchange messages, files, pictures
+over the Internet. I want to encrypt all data travelling between the two
+users. The first user’s application will create a random key like
+‘iazskldfhedjuikdeskhfjdkslzopjde’, encrypt this key with PC1 and a fixed
+key like ‘topsecret’, then send this encrypted key to the other user’s
+application. The fixed ‘topsecret’ key is stored within the application
+itself.
+
+
+
+The other user’s application will decrypt the encrypted key with the fixed
+‘topsecret’ key and then the two applications will use PC1 and the decrypted
+key ‘iazskldfhedjuikdeskhfjdkslzopjde’ to encrypt/decrypt the data.
+
+
+
+Is this a good method ?
+
+
+
+Answer:
+
+
+
+No, this is a very bad method because a hacker could easily disassemble your
+application, then find the fixed ‘topsecret’ key  and he would be able to
+decrypt all future random key encrypted with the fixed ‘topsecret’ key.
+
+
+
+ To securely exchange a key between two users, you should use an asymmetric
+cipher like PKEP (Pukall Key Exchange Protocol).
+
+
+
+The PKEP Phase 1 must be executed at either end of the exchange route on
+each user’s application. This will create two files, LOCAL.BIN and SEND.BIN,
+on each user’s application.
+
+
+
+Then the SEND.BIN files must be exchanged.
+
+
+
+SEND.BIN from User 1 must be sent to User 2 and replace User 2’s SEND.BIN.
+SEND.BIN from User 2 must be sent to User 1 and replace User 1’s SEND.BIN.
+
+
+
+Next, each user must execute PKEP Phase 2.
+
+
+
+Each will generate a 32 byte random key. The key will be identical for both
+User 1 and User 2. Both will also use that key with PC1 to encrypt/decrypt
+data.
+
+
+
+Question:
+
+
+
+PKEP seems very good but how does it work?
+
+
+
+Answer:
+
+
+
+You want mathematics? Ok!
+
+
+
+Let’s take a simple example.
+
+
+
+Let’s suppose that two users have a common number: 443
+
+
+
+User 1 generates a random number: 234
+
+User 2 generates a random number: 718
+
+
+
+User 1 computes X= 443*234=103662
+
+
+
+Then X is reduced to X modulo 65536 (the rest of the division of
+103662/65536)
+
+
+
+So X=38126
+
+
+
+Then User 1 sends X to User 2
+
+
+
+User 2 computes Y=443*718=318074
+
+
+
+Then Y is reduced to Y modulo 65536
+
+
+
+So Y=55930 (Y is the rest of the division of 318074/65536)
+
+
+
+User 2 sends Y to User 1
+
+
+
+User 1 computes KEY=Y*234 (234 is User 1’s random number)
+
+KEY=55930*234
+
+KEY=13087620
+
+KEY=45956 (modulo 65536)
+
+
+
+User 2 computes KEY=X*718 (718 is User 2’s random number)
+
+KEY=38126*718
+
+KEY=27374468
+
+KEY=45956 (modulo 65536)
+
+
+
+Now here is some miracle!
+
+
+
+KEY at User 1’s end is the same as KEY at User 2’s end.
+
+
+
+They can then use this shared key (45956) to encrypt data between them.
+
+
+
+PKEP uses the same basic principle but with much bigger numbers. Also PKEP
+uses the Power operation and not the multiplication between numbers. PKEP is
+a most secure system.
+
+
+
+Question:
+
+
+
+I’m creating a word processor and I want to protect it with license keys.
+Users can use the complete version only when they have paid a license fee.
+I’m using PC1 to create license keys. I take the user’s name and user’s
+email as a PC1 key and I encrypt a fixed string like ‘WORDPROCESSOR
+LICENSE’. This generates an encrypted string such as ‘dlpacbndflgkjnhb…..’ I
+then send these encrypted strings to licensees of my word processor. Users
+enter these encrypted strings, their name and email.
+
+My word processor then uses their name and email as PC1 key to decrypt the
+encrypted string. If the result is ‘WORDPROCESSOR LICENSE’, then the
+application runs in full registered mode and not in shareware mode.
+
+
+
+Is it a good method ?
+
+
+
+Answer:
+
+
+
+No, this is a very bad method. A hacker could easily disassemble your
+application and get to know the name and email used to encrypt the fixed key
+with PC1. Then these hackers could use the same method as yours to produce
+false license keys. They could use ‘hacker’ and ‘hacker@hacker.com’ as PC1
+key to encrypt ‘WORDPROCESSOR LICENSE’ and get a valid license key for your
+word processor without paying any fee at all.
+
+
+
+Here is a safe method to generate license keys:
+
+
+
+– First, you should create a random fixed key like
+‘aplsdcforfjutikfrpljyhbncvxrztds’.
+
+
+
+– You then use that key to encrypt a portion of your application code. (this
+key is secret and must not be sent to anyone).
+
+
+
+For example, let’s suppose that the shareware version of your application
+can not save documents. The code that saves documents should be encrypted
+inside your application. In C or Delphi, it’s easier to have this code in a
+separate .DLL file. When a user wants to save a document, this DLL is called
+but the code of the DLL itself is encrypted and cannot execute if the user
+is in shareware version.
+
+
+
+– When a user buys a license, you encrypt the random fixed key
+‘aplsdcforfjutikfrpljyhbncvxrztds’ with the user’s name, user’s email,
+user’s address … as PC1 key.
+
+
+
+– You then send the encrypted result key like ‘lponmedfgklacbf….’ to the
+user.
+
+
+
+– The user enters the encrypted result key  ‘lponmedfgklacbf….’  in your
+word processor registration dialog. He also enters his user’s name, user’s
+email, user’s address.
+
+
+
+– Then when the user wants to save a document, the word processor uses the
+user’s name, user’s email and user’s address to decrypt the encrypted result
+key ‘lponmedfgklacbf…. and generate the random fixed key
+‘aplsdcforfjutikfrpljyhbncvxrztds’. The word processor uses this random
+fixed key to decrypt the .DLL and call the code inside the .DLL to save the
+document.
+
+
+
+With this method,  no hacker could ever find the random fixed key 
+‘aplsdcforfjutikfrpljyhbncvxrztds’ unless they buy a real license key
+themselves. But to do this, they would have to give their credit card
+number, their name, their email, their postal address, etc. Hackers do not
+want to give this kind of information and also do not want to pay for any
+license. They much prefer to download your application and disassemble it at
+their home. But by disassembling your application without buying a license
+key, hackers cannot find your random fixed key because it is not stored
+within your word processor.
+
+
+
+The security lies in the encryption of the .DLL. So you must have a part of
+your code encrypted in the .DLL itself.
+
+
+
+If you only show a message box with ‘Unregistered version’, hackers could
+patch (modify) your application so that the message box never pops up.
+
+
+
+If you use the computer date to allow only 30 days of evaluation, hackers
+could patch your application to increase the 30 days to 255 days for
+example. Or they could deactivate the counting of the days and your
+application would never realize that the date remains the same.
+
+
+
+On the contrary, if you use an encrypted .DLL that contains encrypted code,
+hackers could not alter anything in your application unless they decrypt the
+.DLL. But to be able to do this, they must first buy a real license and give
+their personal details, a thing which they’d never want to do.
+
+			
+	
+									
+	
+

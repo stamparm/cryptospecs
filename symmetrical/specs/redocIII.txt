@@ -1,0 +1,33 @@
+REDOC III
+
+REDOC III is a streamlined version of REDOC II, also designed by Michael Wood [1615]. It operates
+on an 80-bit block. The key length is variable and can be as large as 2560 bytes (20, 480 bits).
+The algorithm consists solely of XORing key bytes with message bytes; there are no permutations or
+substitutions.
+(1)  Create a key table of 256 10-byte keys, using the secret key.
+(2)  Create two 10-byte mask blocks, M1 and M2. M1 is the XOR of the first 128 10-byte keys; M2 is
+the XOR of the second 128 10-byte keys.
+(3)  To encrypt a 10-byte block:
+(a)  XOR the first byte of the data block with the first byte of M1. Select a key from the key
+table computed in step (1). Use the computed XOR as the index into the table. XOR each byte in the
+data block with the corresponding byte in the chosen key, except for the first data byte.
+(b)  XOR the second byte of the data block with the second byte of M1. Select a key from the key
+table computed in step (1). Use the computed XOR as the index into the table. XOR each byte in the
+data block with the corresponding byte in the chosen key, except for the second data byte.
+(c)  Continue with the entire block (bytes 3 through 10), until each byte has been used to select a
+key from the key table after XORing it with the corresponding M1 value. Then XOR each byte with the
+key except for the byte used to select the key.
+(d)  Repeat steps (a) through (c) with M2.
+
+The algorithm is easy and fast. On a 33 megahertz 80386, the algorithm encrypts data at 2.75
+megabits per second. Wood estimates that a VLSI-pipelined design, with a 64-bit data path, woud
+encrypt data at over 1.28 gigabits per second with a 20 megahertz clock.
+
+REDOC III is not secure [1440]. It is vulnerable to differential cryptanalysis. Only about 223
+chosen plaintexts are required to reconstruct both masks.
+
+Patents and Licenses
+
+Both REDOC versions are patented in the United States [1614]. Foreign patents are pending. Anyone
+interested in licensing either REDOC II or REDOC III should contact Michael C. Wood, Delta
+Computec, Inc., 6647 Old Thompson Rd., Syracuse, NY 13211.
