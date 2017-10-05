@@ -3,7 +3,7 @@ Official archive of (deprecated) https://code.google.com/p/cryptospecs/
 
 ![Screenshot](http://i.imgur.com/B5slkPP.png)
 
-## Classical</sub>
+## Classical
 
 | <sub>*Name*</sub>                  | <sub>*Author*</sub>                         | <sub>*Date*</sub>         | <sub>*Key needed*</sub> | <sub>*More info*</sub>                                                                                       |
 |-------------------------|----------------------------------|----------------|--------------|---------------------------------------------------------------------------------------------------|
@@ -27,9 +27,9 @@ Official archive of (deprecated) https://code.google.com/p/cryptospecs/
 | <sub>Trifid</sub>                  | <sub>Felix Delastelle</sub>                 | <sub>1901</sub>           | <sub>no</sub>           | <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/classical/specs/trifid.pdf)</sub>                 |
 | <sub>Trithemian</sub>              | <sub>Johannes Trithemius</sub>              | <sub>1518</sub>           | <sub>no</sub>           | <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/classical/specs/trithemian.pdf)</sub>             |
 | <sub>Vigenere</sub>                | <sub>Giovan Batista Belaso</sub>            | <sub>1553</sub>           | <sub>yes</sub>          | <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/classical/specs/vigenere.pdf)</sub>               |
-| <sub>WigWag</sub>                 | <sub>Albert J. Meyer</sub>                  | <sub>1859</sub>           | <sub>no</sub>           | <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/classical/specs/wigwag.pdf)     
+| <sub>WigWag</sub>                 | <sub>Albert J. Meyer</sub>                  | <sub>1859</sub>           | <sub>no</sub>           | <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/classical/specs/wigwag.pdf)</sub>        |
 
-## Symmetrical</sub>
+## Symmetrical
 
 | <sub>*Name*</sub>                                                 |  <sub>*Alias(es)*</sub>                                             |  <sub>*Type*</sub> |  <sub>*Block size*</sub>       |  <sub>*Key length*</sub>                      |  <sub>*Designer(s)*</sub>                                                                                                                                                                                                  |  <sub>*Published*</sub>    |  <sub>*Source reference*</sub>                                                                        |  <sub>*Specification reference*</sub>                                                               | 
 |--------------------------------------------------------|----------------------------------------------------------|---------|---------------------|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------| 
@@ -111,7 +111,7 @@ Official archive of (deprecated) https://code.google.com/p/cryptospecs/
 | <sub>XTEA (Extended Tiny Encryption Algorithm)</sub>              |  <sub>N/A</sub>                                                     |  <sub>Block</sub>  |  <sub>8 bytes</sub>            |  <sub>16 bytes</sub>                          |  <sub>David Wheeler, Roger Needham</sub>                                                                                                                                                                                   |  <sub>1996</sub>           |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/symmetrical/sources/xtea.cpp)</sub>       |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/symmetrical/specs/xtea.pdf)</sub>       | 
 | <sub>Yamb</sub>                                                   |  <sub>N/A</sub>                                                     |  <sub>Stream</sub> |  <sub>1 bit</sub>              |  <sub>1, 2, ..., or 32 bytes</sub>            |  <sub>LAN Crypto</sub>                                                                                                                                                                                                     |  <sub>April 2005</sub>     |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/symmetrical/sources/yamb.zip)</sub>       |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/symmetrical/specs/yamb)</sub>           | 
 
-<sub>## Asymmetrical</sub>
+## Asymmetrical
 
 | <sub>*Name*</sub>   |  <sub>*Designer(s)*</sub>                        |  <sub>*Published*</sub> |  <sub>*Specification reference*</sub>
 |----------|---------------------------------------|--------------|-----------------------------------------------------------------------------------------
@@ -119,9 +119,9 @@ Official archive of (deprecated) https://code.google.com/p/cryptospecs/
 | <sub>LUC</sub>      |  <sub>Peter J. Smith, Michael J. J. Lennon</sub> |  <sub>1993</sub>        |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/asymmetrical/specs/luc.pdf)</sub>
 | <sub>Paillier</sub> |  <sub>Pascal Paillier</sub>                      |  <sub>1999</sub>        |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/asymmetrical/specs/paillier.zip)</sub>
 | <sub>Rabin</sub>    |  <sub>Michael Rabin</sub>                        |  <sub>1979</sub>        |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/asymmetrical/specs/rabin.zip)</sub>
-| <sub>RSA</sub>      |  <sub>Ron Rivest, Adi Shamir, Len Adleman</sub>  |  <sub>1977</sub>        |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/asymmetrical/specs/rsa.zip)
+| <sub>RSA</sub>      |  <sub>Ron Rivest, Adi Shamir, Len Adleman</sub>  |  <sub>1977</sub>        |  <sub>[download](https://github.com/stamparm/cryptospecs/raw/master/asymmetrical/specs/rsa.zip)</sub>              |
 
-## Hash</sub>
+## Hash
 
 | <sub>*Name*</sub>                   |  <sub>*Alias(es)*</sub>                                                            |  <sub>*Digest length*</sub> |  <sub>*Block size*</sub> |  <sub>*State size*</sub> |  <sub>*Designer(s)*</sub>                                   |  <sub>*Published*</sub>    |  <sub>*Source reference*</sub>                                                                   |  <sub>*Specification reference*</sub>                                                       | 
 |--------------------------|-------------------------------------------------------------------------|------------------|---------------|---------------|--------------------------------------------------|-----------------|---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------| 
