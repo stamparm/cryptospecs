@@ -1,7 +1,7 @@
 # cryptospecs
 Official archive of (deprecated) https://code.google.com/p/cryptospecs/
 
-![Screenshot](http://i.imgur.com/B5slkPP.png)
+![Screenshot](https://i.imgur.com/wesozmf.png)
 
 ## Classical
 
