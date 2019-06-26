@@ -3,6 +3,8 @@ Official archive of (deprecated) https://code.google.com/p/cryptospecs/
 
 ![Screenshot](https://i.imgur.com/wesozmf.png)
 
+---
+
 ## Classical
 
 | <sub>*Name*</sub>                  | <sub>*Author*</sub>                         | <sub>*Date*</sub>         | <sub>*Key needed*</sub> | <sub>*More info*</sub>                                                                                       |
